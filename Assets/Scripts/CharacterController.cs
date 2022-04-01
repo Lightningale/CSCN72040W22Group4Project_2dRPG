@@ -14,11 +14,12 @@ public class CharacterController : MonoBehaviour
         die
     }
     public CharacterState previousState, currentState;
-    [Header("Stats")]
-    public int level=1;
-    public int exp=0;
-    public int atk=10;
-    public int health=20;
+    [Header("Internal Stats")]
+    public int exp;
+    public int level;
+    public int atk;
+    public int health;
+    public List<int> inventory;
     [Header("Controls")]
     public Camera cam;
     public float runSpeed=10f;
@@ -62,6 +63,7 @@ public class CharacterController : MonoBehaviour
         animator=GetComponent<Animator>();
         groundLayer=LayerMask.GetMask("Ground");
         weaponList=spriteLibraryAsset.GetCategoryLabelNames(weaponCategory).ToArray();
+        UpdateExp();
     }
 
     // Update is called once per frame
@@ -75,7 +77,13 @@ public class CharacterController : MonoBehaviour
         StateMachine();
         SwitchWeapon();
     }
+    void UpdateExp()
+    {
+        level=exp/100;
+        atk=5+level*5;
+        health=50+level*10;
 
+    }
     void StateMachine()
     {
         switch(currentState)
