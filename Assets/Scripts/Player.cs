@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Experimental.U2D.Animation;
-public class CharacterController : MonoBehaviour
+public class Player : MonoBehaviour
 {
     public enum CharacterState
     {
@@ -18,7 +18,8 @@ public class CharacterController : MonoBehaviour
     public int exp;
     public int level;
     public int atk;
-    public int health;
+    public int maxHealth;
+    public int currentHealth;
     public List<int> inventory;
     [Header("Controls")]
     public Camera cam;
@@ -35,6 +36,7 @@ public class CharacterController : MonoBehaviour
     [Header("Components")]
     protected new Rigidbody2D rigidbody;
     protected new Collider2D collider;
+    protected Collider2D attackCollider;
     protected Animator animator;
     [SerializeField]
     protected SpriteLibrary spriteLibrary=default;
@@ -51,6 +53,7 @@ public class CharacterController : MonoBehaviour
     protected bool attackReady=true;
     protected float attackCooldown=0.16f;
     protected bool stateChanged;
+    protected bool stateLock=false;
     protected Vector2 faceDirection;
     // Start is called before the first frame update
     void Start()
@@ -64,6 +67,18 @@ public class CharacterController : MonoBehaviour
         groundLayer=LayerMask.GetMask("Ground");
         weaponList=spriteLibraryAsset.GetCategoryLabelNames(weaponCategory).ToArray();
         UpdateExp();
+        currentHealth=maxHealth;
+
+        attackCollider=GetComponentInChildren<PlayerMeleeAttack>().transform.GetComponent<Collider2D>();
+        /*foreach(Transform tr in transform)
+        {
+            if(tr.tag=="AttackCollider")
+            {
+                Debug.Log("Player found attack collider");
+                attackCollider=tr.GetComponent<Collider2D>();
+                break;
+            }
+        }*/
     }
 
     // Update is called once per frame
@@ -74,16 +89,18 @@ public class CharacterController : MonoBehaviour
         previousState=currentState;
         GetPlayerInput();
         SetHorizontalFlip(horizontalInput);
-        StateMachine();
+        if(!stateLock)
+            StateMachine();
         SwitchWeapon();
     }
     void UpdateExp()
     {
         level=exp/100;
         atk=5+level*5;
-        health=50+level*10;
+        maxHealth=50+level*10;
 
     }
+   
     void StateMachine()
     {
         switch(currentState)
@@ -121,8 +138,8 @@ public class CharacterController : MonoBehaviour
         //animator.
         if(clickPrimary&&attackReady)
         {
-            animator.Play("Attack",1);
-            StartCoroutine("AttackCooldown");
+            
+            StartCoroutine("Attack");
         }
             
         if(!grounded)
@@ -144,8 +161,7 @@ public class CharacterController : MonoBehaviour
         rigidbody.velocity=new Vector2(horizontalInput*runSpeed,rigidbody.velocity.y);
         if(clickPrimary&&attackReady)
         {
-            animator.Play("Attack",1);
-            StartCoroutine("AttackCooldown");
+            StartCoroutine("Attack");
         }
             
         if(!grounded)
@@ -163,8 +179,7 @@ public class CharacterController : MonoBehaviour
         animator.Play("OnAir",0);
         if(clickPrimary&&attackReady)
         {
-            animator.Play("Attack",1);
-            StartCoroutine("AttackCooldown");
+            StartCoroutine("Attack");
         }   
         rigidbody.velocity=new Vector2(horizontalInput*runSpeed*0.75f,rigidbody.velocity.y);
         if(grounded)
@@ -177,6 +192,14 @@ public class CharacterController : MonoBehaviour
     protected void die()
     {
 
+    }
+     public void TakeDamage(int damage,Vector3 source)
+    {
+
+        maxHealth-=damage;
+        animator.Play("Hit",0);
+        SetHorizontalFlip(source.x-transform.position.x);
+        StartCoroutine("HitCooldown");
     }
     protected void SetHorizontalFlip(float direction)
     {
@@ -213,11 +236,23 @@ public class CharacterController : MonoBehaviour
         }
         return false;        
     }
-     protected virtual IEnumerator AttackCooldown()
+     protected virtual IEnumerator Attack()
     {
+        animator.Play("Attack",1);
+        if(attackCollider!=null)
+            attackCollider.enabled=true;
         attackReady=false;
         yield return new WaitForSeconds(attackCooldown);
         attackReady=true;
         animator.Play("None",1);
+        if(attackCollider!=null)
+            attackCollider.enabled=false;
+    }
+    protected virtual IEnumerator HitCooldown()
+    {
+        stateLock=true;
+        yield return new WaitForSeconds(attackCooldown);
+        stateLock=false;
+        animator.Play("None",0);
     }
 }
