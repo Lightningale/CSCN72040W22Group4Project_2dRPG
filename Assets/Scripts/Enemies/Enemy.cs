@@ -12,12 +12,11 @@ public abstract class Enemy : MonoBehaviour
         Dead
     }
     [Header("Internal Stats")]
-    public int exp;
     public int level;
     public int atk;
     public int maxHealth;
     public int currentHealth;
-
+    public int positionSlot;
     public float attackCooldown=0.5f;
     [Header("Movement")]
     public float speed;
@@ -56,16 +55,6 @@ public abstract class Enemy : MonoBehaviour
 
 
         attackCollider=GetComponentInChildren<EnemyMeleeAttack>().transform.GetComponent<Collider2D>();
-        /*foreach(Transform tr in transform)
-        {
-            
-            if(tr.tag=="AttackCollider")
-            {
-                Debug.Log("Enemy found attack collider");
-                attackCollider=tr.GetComponent<Collider2D>();
-                break;
-            }
-        }*/
     }
 
     // Update is called once per frame
@@ -86,6 +75,12 @@ public abstract class Enemy : MonoBehaviour
         }
         return false;        
     }
+    public void Initialize(int level,int positionID)
+    {
+        this.level=level;
+        this.positionSlot=positionID;
+    }
+    public abstract void UpdateStats();
     public void ChangeState(EnemyState newState)
     {
         this.state=newState;
@@ -112,8 +107,20 @@ public abstract class Enemy : MonoBehaviour
         {
             SetHorizontalFlip(source.x-transform.position.x);
             currentHealth-=damage;
-            animator.Play("Hit",0);
-            StartCoroutine("HitCooldown");
+            if(currentHealth<=0)
+            {
+                currentHealth=0;
+                 hitLock=true;
+                animator.Play("Die",0);
+                Destroy(gameObject,2f);
+                EnemyManager.GetInstance().NotifyEnemyDeath(positionSlot);
+            }
+            else
+            {
+                animator.Play("Hit",0);
+                StartCoroutine("HitCooldown");
+            }
+           
         }
         
     }
@@ -130,14 +137,7 @@ public abstract class Enemy : MonoBehaviour
             faceDirection=Vector2.left;
         }
     }
-    protected virtual IEnumerator AttackCooldown()
-    {
-        attackReady=false;
-        yield return new WaitForSeconds(attackCooldown);
-        attackReady=true;
-        animator.Play("None",1);
-    }
-     protected virtual IEnumerator Attack()
+    protected virtual IEnumerator Attack()
     {
         attackLock=true;
         animator.Play("Attack",0);
@@ -148,6 +148,13 @@ public abstract class Enemy : MonoBehaviour
         animator.Play("None",0);
         if(attackCollider!=null)
             attackCollider.enabled=false;
+    }
+    protected virtual IEnumerator Die()
+    {
+        hitLock=true;
+        animator.Play("Die",0);
+        yield return new WaitForSeconds(2f);
+        Destroy(this,2f);
     }
     protected virtual IEnumerator ResetVision()
     {

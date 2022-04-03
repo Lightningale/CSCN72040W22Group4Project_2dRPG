@@ -24,7 +24,6 @@ public class PlayerMeleeAttack : MonoBehaviour
         {   
             //Debug.Log(gameObject.name+" Hit "+other.name);
             hit.TakeDamage(atk,transform.position);
-            
         }
     }
 }

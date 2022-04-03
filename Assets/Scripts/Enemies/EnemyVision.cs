@@ -21,7 +21,6 @@ public class EnemyVision : MonoBehaviour
         Player target=other.GetComponent<Player>();
         if(target!=null)
         {   
-             Debug.Log(this.name+" Vision triggered");
             //if(target.IsAlive())
             thisEnemy.FoundTarget(target.gameObject);
         }

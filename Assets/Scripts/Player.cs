@@ -14,18 +14,25 @@ public class Player : MonoBehaviour
         die
     }
     public CharacterState previousState, currentState;
-    [Header("Internal Stats")]
-    public int exp;
-    public int level;
-    public int atk;
-    public int maxHealth;
-    public int currentHealth;
+  //  [Header("Internal Stats")]
+
+//**Memento should save data in this section and the gameobject's position***********
+    public int money{get;private set;}
+    public int exp{get;private set;}
+
+    public int level{get;private set;}
+    public int atk{get;private set;}
+    public int maxHealth{get;private set;}
+    public int currentHealth{get;private set;}
     public List<int> inventory;
+//***********************************************************************************
     [Header("Controls")]
     public Camera cam;
-    public float runSpeed=10f;
-    public float jumpSpeed=40;
-    public float scale=1;
+    [SerializeField]
+    private float runSpeed=10f;
+    [SerializeField]
+    private float jumpSpeed=40;
+    private float scale=1;
     [SerializeField]
     protected LayerMask groundLayer;
     
@@ -66,19 +73,11 @@ public class Player : MonoBehaviour
         animator=GetComponent<Animator>();
         groundLayer=LayerMask.GetMask("Ground");
         weaponList=spriteLibraryAsset.GetCategoryLabelNames(weaponCategory).ToArray();
-        UpdateExp();
+        exp=0;
+        UpdateStats();
         currentHealth=maxHealth;
-
+        
         attackCollider=GetComponentInChildren<PlayerMeleeAttack>().transform.GetComponent<Collider2D>();
-        /*foreach(Transform tr in transform)
-        {
-            if(tr.tag=="AttackCollider")
-            {
-                Debug.Log("Player found attack collider");
-                attackCollider=tr.GetComponent<Collider2D>();
-                break;
-            }
-        }*/
     }
 
     // Update is called once per frame
@@ -93,10 +92,10 @@ public class Player : MonoBehaviour
             StateMachine();
         SwitchWeapon();
     }
-    void UpdateExp()
+    void UpdateStats()
     {
-        level=exp/100;
-        atk=5+level*5;
+        level=1+exp/100;
+        atk=15+level*5;
         maxHealth=50+level*10;
 
     }

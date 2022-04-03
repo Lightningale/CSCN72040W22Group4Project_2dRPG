@@ -66,8 +66,6 @@ public class EnemyEngage: EnemyState
     {
         this.target=target;
         //animationLock=false;
-
-       
     }
     public override void Action()
     {
@@ -85,6 +83,4 @@ public class EnemyEngage: EnemyState
                 subject.StartCoroutine("Attack");
         }
     }
-    
-    
 }

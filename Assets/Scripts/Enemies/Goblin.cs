@@ -10,13 +10,21 @@ public class Goblin : Enemy
         base.Start();
         ChangeState(new EnemyIdle(this));
         speed=2f;
+        //level=1;
         attackRange=1f;
-        atk=50;
+      //  UpdateStats();
+        
     }
 
     // Update is called once per frame
     public override void Update()
     {
         base.Update();
+    }
+    public override void UpdateStats()
+    {
+        atk=5+level*5;
+        maxHealth=50+level*10;
+        currentHealth=maxHealth;
     }
 }
