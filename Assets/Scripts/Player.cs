@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Experimental.U2D.Animation;
 public class Player : MonoBehaviour
 {
+    private static Player instance;
     public enum CharacterState
     {
         none,
@@ -65,6 +66,7 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Player.instance=this;
         previousState=CharacterState.none;
         currentState=CharacterState.idle;
         faceDirection=Vector2.right;
@@ -91,6 +93,12 @@ public class Player : MonoBehaviour
         if(!stateLock)
             StateMachine();
         SwitchWeapon();
+    }
+    public static Player GetInstance()
+    {
+        if(Player.instance==null)
+            Player.instance=new Player();
+        return Player.instance;
     }
     void UpdateStats()
     {
