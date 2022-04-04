@@ -11,7 +11,8 @@ public class EnemyManager : MonoBehaviour
     private List<bool> spawnPositionOccupation;
     //public static GameObject[] enemyPrefabs;
     private List<GameObject> enemyPrefabs;
-   // private List<GameObject> activeEnemies=new List<GameObject>();
+    
+    private Player player;
     
     // Start is called before the first frame update
     void Start()
@@ -27,6 +28,8 @@ public class EnemyManager : MonoBehaviour
         }
         EnemyManager.instance=this;
         Random.seed = System.DateTime.Now.Millisecond;
+        
+        player=FindObjectOfType<Player>() as Player;
     }
 
     // Update is called once per frame
@@ -57,6 +60,7 @@ public class EnemyManager : MonoBehaviour
     {
         spawnPositionOccupation[positionID]=false;
         StartCoroutine("DelayedSpawn");
+        player.AddExp(100);
     }
     private GameObject spawnEnemy()
     {

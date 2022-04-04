@@ -6,6 +6,31 @@ using UnityEngine.Experimental.U2D.Animation;
 public class Player : MonoBehaviour
 {
     private static Player instance;
+    public GameObject charStatUI;
+    public class SaveData
+    {
+        public int level{get;private set;}
+        public int maxExp{get;private set;}
+        public int exp{get;private set;}
+        public int mana{get;private set;}
+        public Vector3 position{get;private set;}
+        public List<int>weaponList{get;private set;}
+        //default constructor
+        public SaveData(int level,int exp,Vector3 position,List<int>weapons)
+        {
+            this.level=level;
+            this.exp=exp;
+            this.position=position;
+            this.weaponList=new List<int>(weapons);
+        }
+        public SaveData(SaveData copy)//deep copy constructor
+        {
+            this.level=copy.level;
+            this.exp=copy.exp;
+            this.position=copy.position;
+            this.weaponList=new List<int>(copy.weaponList);
+        }
+    }
     public enum CharacterState
     {
         none,
@@ -18,14 +43,16 @@ public class Player : MonoBehaviour
   //  [Header("Internal Stats")]
 
 //**Memento should save data in this section and the gameobject's position***********
-    public int money{get;private set;}
-    public int exp{get;private set;}
-
     public int level{get;private set;}
-    public int atk{get;private set;}
-    public int maxHealth{get;private set;}
+    public int exp{get;private set;}
+    public int currentMana{get;private set;}
     public int currentHealth{get;private set;}
-    public List<int> inventory;
+    public Vector3 position{get;private set;}
+    public int maxExp{get;private set;}
+    public int maxMana{get;private set;}
+    public int maxHealth{get;private set;}
+    public int atk{get;private set;}
+    public List<int> weapons;
 //***********************************************************************************
     [Header("Controls")]
     public Camera cam;
@@ -96,18 +123,51 @@ public class Player : MonoBehaviour
     }
     public static Player GetInstance()
     {
-        if(Player.instance==null)
-            Player.instance=new Player();
+       // if(Player.instance==null)
+         //   Player.instance=
         return Player.instance;
+    }
+    public SaveData GenerateSave()
+    {
+        return new SaveData(level,exp,transform.position,weapons);
+    }
+    public void ResetState()
+    {
+        LoadSave(new SaveData(1,0,new Vector3(0,0,0),new List<int>(0)));
+        //charStatUI.SetActive(true);
+    }
+    public void LoadSave(SaveData save)
+    {
+        level=save.level;
+        exp=save.exp;
+        transform.position=save.position;
+        weapons=new List<int>(save.weaponList);
+        UpdateStats();
+    }
+    public void AddExp(int amount)
+    {
+        exp+=amount;
+        UpdateStats();
     }
     void UpdateStats()
     {
-        level=1+exp/100;
+        maxExp=50+level*50;
+        while(exp>maxExp)
+        {
+            exp-=maxExp;
+            level++;
+            maxExp=50+level*50;
+        }
         atk=15+level*5;
         maxHealth=50+level*10;
-
+        maxMana=80+level*20;
+        currentHealth=maxHealth;
     }
-   
+   void RestoreMana()
+   {
+       if(currentMana<maxMana)
+          currentMana++;
+   }
     void StateMachine()
     {
         switch(currentState)

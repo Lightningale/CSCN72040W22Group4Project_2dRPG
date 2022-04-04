@@ -2,21 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using TMPro;
 public class CharStatsUI : MonoBehaviour
 {
     // Start is called before the first frame update
     //public GlobalController globalController;
-    public List<Vector3> AvatarPositions;
-    public List<GameObject> Avatars;
-    public List<GameObject> Healthbars;
-    public List<GameObject> Energybars;
-    public Vector3 Avatar1Pos=new Vector3(0,0,0);
-    public Vector3 Avatar2Pos=new Vector3(-38,-32,0);
-    bool updateAvatarPos=false;
+    //public Vector3 AvatarPosition;
+   // public GameObject Avatar;
+    public GameObject Healthbar;
+    public GameObject Energybar;
+    public TextMeshProUGUI levelText;
+    private int maxHealth,maxExp,maxMana;
+    private int health,exp,mana,level;
+    private Player player;
     void Start()
     {
-        AvatarPositions.Add(new Vector3(0,0,0));
-        AvatarPositions.Add(new Vector3(-38,-32,0));
+        player=Player.GetInstance();
+        //AvatarPosition=new Vector3(0,0,0);
         
     }
 
@@ -24,16 +26,13 @@ public class CharStatsUI : MonoBehaviour
     void Update()
     {
   
-        for(int i=0;i<Avatars.Count;i++)
-        {
-            Avatars[i].GetComponent<RectTransform>().anchoredPosition=Vector3.MoveTowards(Avatars[i].GetComponent<RectTransform>().localPosition,AvatarPositions[i],400f*Time.deltaTime);
-       //     Healthbars[i].GetComponent<RectTransform>().anchoredPosition=new Vector3(-528f+1120f*((float)globalController.characterList[i].health/(float)globalController.characterList[i].maxHealth),42,0);
-       //     Energybars[i].GetComponent<RectTransform>().anchoredPosition=new Vector3(-882f+882f*((float)globalController.characterList[i].energy/(float)globalController.characterList[i].maxEnergy),0,0);
-            
-        }  
-     
+
+            //Avatar.GetComponent<RectTransform>().anchoredPosition=Vector3.MoveTowards(Avatar.GetComponent<RectTransform>().localPosition,AvatarPositions[i],400f*Time.deltaTime);
+            levelText.text="LV/"+player.level;
+            Healthbar.GetComponent<RectTransform>().anchoredPosition=new Vector3(-528f+1120f*((float)health/maxHealth),42,0);
+            Energybar.GetComponent<RectTransform>().anchoredPosition=new Vector3(-882f+882f*((float)mana/(float)maxMana),0,0);
     }
-    public void changeMainCharacter()
+    /*public void changeMainCharacter()
     {
         
         updateAvatarPos=true;
@@ -47,5 +46,5 @@ public class CharStatsUI : MonoBehaviour
         Avatars[Avatars.Count-1]=temp;
         Avatars[Avatars.Count-1].GetComponent<SortingGroup>().sortingOrder=0;
         Avatars[Avatars.Count-1].transform.SetSiblingIndex(0);
-    }
+    }*/
 }
