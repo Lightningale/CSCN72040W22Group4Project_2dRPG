@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.Experimental.U2D.Animation;
 public class Player : MonoBehaviour
 {
-    private static Player instance;
     public GameObject charStatUI;
     public class SaveData
     {
@@ -14,21 +13,21 @@ public class Player : MonoBehaviour
         public int exp{get;private set;}
         public int mana{get;private set;}
         public Vector3 position{get;private set;}
-        public List<int>weaponList{get;private set;}
+        public List<Weapon>weaponList{get;private set;}
         //default constructor
-        public SaveData(int level,int exp,Vector3 position,List<int>weapons)
+        public SaveData(int level,int exp,Vector3 position,List<Weapon>weapons)
         {
             this.level=level;
             this.exp=exp;
             this.position=position;
-            this.weaponList=new List<int>(weapons);
+            this.weaponList=new List<Weapon>(weapons);
         }
         public SaveData(SaveData copy)//deep copy constructor
         {
             this.level=copy.level;
             this.exp=copy.exp;
             this.position=copy.position;
-            this.weaponList=new List<int>(copy.weaponList);
+            this.weaponList=new List<Weapon>(copy.weaponList);
         }
     }
     public enum CharacterState
@@ -52,7 +51,8 @@ public class Player : MonoBehaviour
     public int maxMana{get;private set;}
     public int maxHealth{get;private set;}
     public int atk{get;private set;}
-    public List<int> weapons;
+    public int currentWeapon{get;private set;}
+    public List<Weapon> weaponInvetory;
 //***********************************************************************************
     [Header("Controls")]
     public Camera cam;
@@ -65,9 +65,11 @@ public class Player : MonoBehaviour
     protected LayerMask groundLayer;
     
     
-    [Header("Inputs")]
-    protected float horizontalInput,verticalInput;
-    protected bool clickJump,releaseJump,clickPrimary;
+
+    public PlayerControlSet controlInput{get;private set;}
+  /*  protected float horizontalInput,verticalInput;
+    protected int alphaKeyPress;
+    protected bool clickJump,releaseJump,clickPrimary;*/
     [Header("Components")]
     protected new Rigidbody2D rigidbody;
     protected new Collider2D collider;
@@ -81,19 +83,18 @@ public class Player : MonoBehaviour
     [SerializeField]
     protected string weaponCategory=default;
     
-    protected string[] weaponList;
+    protected string[] weaponNameList;
     [Header("Internal States")]
     protected bool grounded;
     protected bool resetJump=false;
-    protected bool attackReady=true;
-    protected float attackCooldown=0.16f;
+    public bool attackReady{get;set;}
+    public float attackCooldown{get;private set;}
     protected bool stateChanged;
     protected bool stateLock=false;
-    protected Vector2 faceDirection;
+    public Vector2 faceDirection{get;private set;}
     // Start is called before the first frame update
     void Start()
     {
-        Player.instance=this;
         previousState=CharacterState.none;
         currentState=CharacterState.idle;
         faceDirection=Vector2.right;
@@ -101,40 +102,47 @@ public class Player : MonoBehaviour
         collider=GetComponent<Collider2D>();
         animator=GetComponent<Animator>();
         groundLayer=LayerMask.GetMask("Ground");
-        weaponList=spriteLibraryAsset.GetCategoryLabelNames(weaponCategory).ToArray();
+        weaponNameList=spriteLibraryAsset.GetCategoryLabelNames(weaponCategory).ToArray();
+        weaponInvetory=new List<Weapon>();
+        weaponInvetory.Add(new Sword(this));
+        weaponInvetory.Add(new Wand(this));
+        currentWeapon=0;
         exp=0;
         UpdateStats();
         currentHealth=maxHealth;
         
         attackCollider=GetComponentInChildren<PlayerMeleeAttack>().transform.GetComponent<Collider2D>();
+        attackCooldown=0.16f;
+        attackReady=true;
     }
 
     // Update is called once per frame
     void Update()
     {   
+        GetPlayerInput();    
+        if(controlInput.AlphaKeyDown>0)
+        {
+            SwitchWeapon(controlInput.AlphaKeyDown);
+        }
+            
         grounded=IsGrounded();
         stateChanged=previousState!=currentState;
         previousState=currentState;
         GetPlayerInput();
-        SetHorizontalFlip(horizontalInput);
+        SetHorizontalFlip(controlInput.horizontalInput);
         if(!stateLock)
             StateMachine();
-        SwitchWeapon();
         RestoreMana();
-    }
-    public static Player GetInstance()
-    {
-       // if(Player.instance==null)
-         //   Player.instance=
-        return Player.instance;
     }
     public SaveData GenerateSave()
     {
-        return new SaveData(level,exp,transform.position,weapons);
+        return new SaveData(level,exp,transform.position,weaponInvetory);
     }
     public void ResetState()
     {
-        LoadSave(new SaveData(1,0,new Vector3(0,0,0),new List<int>(0)));
+        LoadSave(new SaveData(1,0,new Vector3(0,0,0),new List<Weapon>(0)));
+        weaponInvetory.Add(new Sword(this));
+        weaponInvetory.Add(new Wand(this));
         //charStatUI.SetActive(true);
     }
     public void LoadSave(SaveData save)
@@ -142,7 +150,7 @@ public class Player : MonoBehaviour
         level=save.level;
         exp=save.exp;
         transform.position=save.position;
-        weapons=new List<int>(save.weaponList);
+        weaponInvetory=new List<Weapon>(save.weaponList);
         UpdateStats();
     }
     public void AddExp(int amount)
@@ -187,38 +195,47 @@ public class Player : MonoBehaviour
             break;
         }
     }
-    void SwitchWeapon()
+    void SwitchWeapon(int keyPressed)
     {
-        if(Input.GetKeyDown(KeyCode.Alpha1))
-            spriteResolver.SetCategoryAndLabel(weaponCategory,weaponList[0]);
-        else if(Input.GetKeyDown(KeyCode.Alpha2))
-            spriteResolver.SetCategoryAndLabel(weaponCategory,weaponList[1]);   
-        else if(Input.GetKeyDown(KeyCode.Alpha3))
-            spriteResolver.SetCategoryAndLabel(weaponCategory,weaponList[2]); 
-        else if(Input.GetKeyDown(KeyCode.Alpha4))
-            spriteResolver.SetCategoryAndLabel(weaponCategory,weaponList[3]); 
-        else if(Input.GetKeyDown(KeyCode.Alpha5))
-            spriteResolver.SetCategoryAndLabel(weaponCategory,weaponList[4]); 
-
+        int entry=keyPressed-1;
+        if(entry==-1)
+            entry=10;
+        if(weaponInvetory.Count>entry)
+        {
+            if(weaponInvetory[entry]!=null)
+            {
+                currentWeapon=entry;
+                if(weaponInvetory[currentWeapon] is Sword)
+                {
+                    spriteResolver.SetCategoryAndLabel(weaponCategory,weaponNameList[1]); 
+                }
+                    
+                else if (weaponInvetory[currentWeapon] is Wand)
+                {
+                    spriteResolver.SetCategoryAndLabel(weaponCategory,weaponNameList[4]); 
+                }     
+            }
+        }
     }
     protected void Idle()
     {
         animator.Play("Idle",0);
         //animator.
-        if(clickPrimary&&attackReady)
-        {
-            
+        if(controlInput.leftClick&&attackReady)
+        {     
             StartCoroutine("Attack");
+            Debug.Log("attack");
+            weaponInvetory[currentWeapon].Attack();
         }
             
         if(!grounded)
             currentState=CharacterState.onAir;
-        else if(clickJump&&attackReady)
+        else if(controlInput.clickJump&&attackReady)
         {
             rigidbody.velocity=new Vector2(rigidbody.velocity.x,jumpSpeed);
             currentState=CharacterState.onAir;
         }       
-        else if(horizontalInput!=0)
+        else if(controlInput.horizontalInput!=0)
         {
             currentState=CharacterState.run;
         }
@@ -227,30 +244,32 @@ public class Player : MonoBehaviour
     protected void Run()
     {
         animator.Play("Run",0);
-        rigidbody.velocity=new Vector2(horizontalInput*runSpeed,rigidbody.velocity.y);
-        if(clickPrimary&&attackReady)
+        rigidbody.velocity=new Vector2(controlInput.horizontalInput*runSpeed,rigidbody.velocity.y);
+        if(controlInput.leftClick&&attackReady)
         {
             StartCoroutine("Attack");
+            weaponInvetory[currentWeapon].Attack();
         }
             
         if(!grounded)
             currentState=CharacterState.onAir;
-        else if(clickJump)
+        else if(controlInput.clickJump)
         {
             rigidbody.velocity=new Vector2(rigidbody.velocity.x,jumpSpeed);
             currentState=CharacterState.onAir;
         }    
-        else if(horizontalInput==0)
+        else if(controlInput.horizontalInput==0)
             currentState=CharacterState.idle;
     }
     protected void OnAir()
     {
         animator.Play("OnAir",0);
-        if(clickPrimary&&attackReady)
+        if(controlInput.leftClick&&attackReady)
         {
             StartCoroutine("Attack");
+            weaponInvetory[currentWeapon].Attack();
         }   
-        rigidbody.velocity=new Vector2(horizontalInput*runSpeed*0.75f,rigidbody.velocity.y);
+        rigidbody.velocity=new Vector2(controlInput.horizontalInput*runSpeed*0.75f,rigidbody.velocity.y);
         if(grounded)
             currentState=CharacterState.idle;
     }
@@ -270,6 +289,11 @@ public class Player : MonoBehaviour
         SetHorizontalFlip(source.x-transform.position.x);
         StartCoroutine("HitCooldown");
     }
+    public void ConsumeMana(int amount)
+    {
+        if(currentMana>=amount)
+            currentMana-=amount;
+    }
     protected void SetHorizontalFlip(float direction)
     {
         if(direction>0)
@@ -285,12 +309,13 @@ public class Player : MonoBehaviour
     }
     protected void GetPlayerInput()
     {
-
-        horizontalInput=Input.GetAxisRaw("Horizontal");//Only -1 or 1
+        controlInput=InputManager.GetInstance().GetControlInput();
+        
+        /*horizontalInput=Input.GetAxisRaw("Horizontal");//Only -1 or 1
         verticalInput=Input.GetAxisRaw("Vertical");
         clickJump=Input.GetButtonDown("Jump");
         releaseJump=Input.GetButtonUp("Jump");
-        clickPrimary=Input.GetMouseButtonDown(0);
+        clickPrimary=Input.GetMouseButtonDown(0);*/
         
     }
     public virtual bool IsGrounded()
@@ -304,6 +329,15 @@ public class Player : MonoBehaviour
                 return true;
         }
         return false;        
+    }
+    public void PlayAnimation(string name, int layer)
+    {
+        animator.Play(name,layer);
+    }
+    public void SetAttackColliderState(bool state)
+    {
+        if(attackCollider!=null)
+            attackCollider.enabled=state;
     }
      protected virtual IEnumerator Attack()
     {

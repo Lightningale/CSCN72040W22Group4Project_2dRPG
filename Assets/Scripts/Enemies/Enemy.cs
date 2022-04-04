@@ -63,7 +63,7 @@ public abstract class Enemy : MonoBehaviour
         if(!hitLock&&!attackLock)
             state.Action();
     }
-        public virtual bool IsGrounded()
+    public virtual bool IsGrounded()
     {
         RaycastHit2D hitGround=Physics2D.Raycast(transform.position,Vector2.down,0.1f,groundLayer.value);
         

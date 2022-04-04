@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class MenuController : MonoBehaviour
 {
-    private static MenuController instance;
     public GameObject statsUI;
     private SaveDataHandler saveDataHandler;
     [SerializeField]
@@ -14,7 +13,6 @@ public class MenuController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        instance=this;
         foreach(Transform child in transform)
         {
             if(child.tag==menuTag)
@@ -27,13 +25,8 @@ public class MenuController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
-    }
-    public static MenuController GetInstance()
-    {
-        //if(MenuController.instance==null)
-          //  MenuController.instance=new MenuController();
-        return MenuController.instance;
+        if(InputManager.GetInstance().OpenMenuInput()&&!menuOpen)
+            PauseGame();
     }
     private void CloseAllWindows()
     {
