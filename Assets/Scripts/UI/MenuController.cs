@@ -90,7 +90,7 @@ public class MenuController : MonoBehaviour
             saveDataHandler.LoadProgress(entry);
             Time.timeScale=1;
             CloseAllWindows();
-           // statsUI.SetActive(true);
+            statsUI.SetActive(true);
         }
         else if(!saveDataHandler.SlotEmpty(entry))
         {

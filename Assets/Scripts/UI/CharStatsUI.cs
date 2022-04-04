@@ -17,8 +17,7 @@ public class CharStatsUI : MonoBehaviour
     private Player player;
     void Start()
     {
-        player=Player.GetInstance();
-        //AvatarPosition=new Vector3(0,0,0);
+        player=FindObjectOfType<Player>() as Player;
         
     }
 
@@ -26,9 +25,13 @@ public class CharStatsUI : MonoBehaviour
     void Update()
     {
   
-
+            health=player.currentHealth;
+            maxHealth=player.maxHealth;
+            level=player.level;
+            mana=player.currentMana;
+            maxMana=player.maxMana;
             //Avatar.GetComponent<RectTransform>().anchoredPosition=Vector3.MoveTowards(Avatar.GetComponent<RectTransform>().localPosition,AvatarPositions[i],400f*Time.deltaTime);
-            levelText.text="LV/"+player.level;
+            levelText.text="LV/"+level.ToString();
             Healthbar.GetComponent<RectTransform>().anchoredPosition=new Vector3(-528f+1120f*((float)health/maxHealth),42,0);
             Energybar.GetComponent<RectTransform>().anchoredPosition=new Vector3(-882f+882f*((float)mana/(float)maxMana),0,0);
     }

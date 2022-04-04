@@ -27,7 +27,7 @@ public class EnemyManager : MonoBehaviour
           //  activeEnemies.Add(spawned);
         }
         EnemyManager.instance=this;
-        Random.seed = System.DateTime.Now.Millisecond;
+        //Random.seed = System.DateTime.Now.Millisecond;
         
         player=FindObjectOfType<Player>() as Player;
     }
@@ -46,7 +46,8 @@ public class EnemyManager : MonoBehaviour
     }
     private int RandomSpawnPosition()
     {
-        int i=Random.Range(0,spawnPositionList.Count);
+        //int i=Random.Range(0,spawnPositionList.Count);
+        int i=(int)(1/Random.value)%spawnPositionList.Count;
         while(spawnPositionOccupation[i]==true)
         {
             if(i<(spawnPositionList.Count-1))

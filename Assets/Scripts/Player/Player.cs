@@ -120,6 +120,7 @@ public class Player : MonoBehaviour
         if(!stateLock)
             StateMachine();
         SwitchWeapon();
+        RestoreMana();
     }
     public static Player GetInstance()
     {
@@ -161,6 +162,7 @@ public class Player : MonoBehaviour
         atk=15+level*5;
         maxHealth=50+level*10;
         maxMana=80+level*20;
+        currentMana=maxMana;
         currentHealth=maxHealth;
     }
    void RestoreMana()
@@ -262,8 +264,8 @@ public class Player : MonoBehaviour
     }
      public void TakeDamage(int damage,Vector3 source)
     {
-
-        maxHealth-=damage;
+        if(currentHealth>0)
+            currentHealth-=damage;
         animator.Play("Hit",0);
         SetHorizontalFlip(source.x-transform.position.x);
         StartCoroutine("HitCooldown");
