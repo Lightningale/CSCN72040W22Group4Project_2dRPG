@@ -21,7 +21,10 @@ public class MenuController : MonoBehaviour
         saveDataHandler=SaveDataHandler.GetInstance();
         OpenStartMenu();
     }
-
+    public static MenuController GetInstance()
+    {
+        return FindObjectOfType<MenuController>();
+    }
     // Update is called once per frame
     void Update()
     {
@@ -69,6 +72,13 @@ public class MenuController : MonoBehaviour
         Time.timeScale=0;
         CloseAllWindows();
         menuItems[3].SetActive(true);
+        menuOpen=true;
+    }
+      public void OpenGameOverMenu()
+    {
+        Time.timeScale=0;
+        CloseAllWindows();
+        menuItems[4].SetActive(true);
         menuOpen=true;
     }
     public void SaveProgress(int entry)

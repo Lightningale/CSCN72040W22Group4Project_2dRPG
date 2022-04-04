@@ -123,11 +123,15 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {   
-        GetPlayerInput();    
+        if(currentState!=CharacterState.die)
+        {
+            GetPlayerInput();    
         if(controlInput.AlphaKeyDown>0)
         {
             SwitchWeapon(controlInput.AlphaKeyDown);
         }
+        }
+        
             
         grounded=IsGrounded();
         stateChanged=previousState!=currentState;
@@ -154,7 +158,7 @@ public class Player : MonoBehaviour
         LoadSave(new SaveData(1,0,new Vector3(0,0,0),new List<Weapon>(0)));
         weaponInvetory.Add(new Sword(this));
         weaponInvetory.Add(new Wand(this));
-        //charStatUI.SetActive(true);
+        currentState=CharacterState.idle;
     }
     public void LoadSave(SaveData save)
     {
@@ -163,6 +167,7 @@ public class Player : MonoBehaviour
         transform.position=save.position;
         weaponInvetory=new List<Weapon>(save.weaponList);
         UpdateStats();
+        currentState=CharacterState.idle;
     }
     public void AddExp(int amount)
     {
@@ -296,9 +301,20 @@ public class Player : MonoBehaviour
     {
         if(currentHealth>0)
             currentHealth-=damage;
-        animator.Play("Hit",0);
-        SetHorizontalFlip(source.x-transform.position.x);
-        StartCoroutine("HitCooldown");
+        if(currentHealth<=0)
+        {
+            currentHealth=0;
+            currentState=CharacterState.die;
+            animator.Play("Die",0);
+            MenuController.GetInstance().OpenGameOverMenu();
+        }
+        else
+        {
+            animator.Play("Hit",0);
+            SetHorizontalFlip(source.x-transform.position.x);
+            StartCoroutine("HitCooldown");
+        }
+        
     }
     public void ConsumeMana(int amount)
     {

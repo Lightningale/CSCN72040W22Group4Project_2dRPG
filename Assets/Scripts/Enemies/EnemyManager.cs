@@ -67,7 +67,8 @@ public class EnemyManager : MonoBehaviour
     {
         GameObject spawned;
         int positionID=RandomSpawnPosition();
-        spawned=Instantiate(enemyPrefabs[0],spawnPositionList[positionID],new Quaternion());
+        int enemyType=(int)(1/Random.value)%enemyPrefabs.Count;
+        spawned=Instantiate(enemyPrefabs[enemyType],spawnPositionList[positionID],new Quaternion());
         spawnPositionOccupation[positionID]=true;
         spawned.GetComponent<Enemy>().Initialize(1,positionID);
         spawned.GetComponent<Enemy>().UpdateStats();

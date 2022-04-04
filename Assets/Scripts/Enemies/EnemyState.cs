@@ -70,17 +70,22 @@ public class EnemyEngage: EnemyState
     public override void Action()
     {
         base.Action();
-        //Debug.Log(subject.name+" Engaging");
+        
         if(!subject.attackLock)
             subject.animator.Play("Run",0);
         Vector3 destination=new Vector3(target.transform.position.x,subject.transform.position.y,subject.transform.position.z);
         subject.SetHorizontalFlip(destination.x-subject.transform.position.x);
+        Debug.Log("Distance:"+Vector3.Distance(destination,subject.transform.position));
         if(Vector3.Distance(destination,subject.transform.position)>=subject.attackRange)
             subject.transform.position=Vector3.MoveTowards(subject.transform.position,destination,subject.GetSpeed()*1.2f*Time.deltaTime);
         else
         {
             if(!subject.attackLock)
+            {
+                Debug.Log(subject.name+" Attacked");
                 subject.StartCoroutine("Attack");
+            }
+                
         }
     }
 }
