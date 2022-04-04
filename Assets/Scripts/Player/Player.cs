@@ -85,6 +85,9 @@ public class Player : MonoBehaviour
     
     protected string[] weaponNameList;
     [Header("Internal States")]
+
+    [SerializeField]
+    protected List<IPlayerStatListener> statSubscribers;
     protected bool grounded;
     protected bool resetJump=false;
     public bool attackReady{get;set;}
@@ -110,7 +113,8 @@ public class Player : MonoBehaviour
         exp=0;
         UpdateStats();
         currentHealth=maxHealth;
-        
+        statSubscribers=new List<IPlayerStatListener>();
+        statSubscribers.Add(charStatUI.GetComponent<IPlayerStatListener>());
         attackCollider=GetComponentInChildren<PlayerMeleeAttack>().transform.GetComponent<Collider2D>();
         attackCooldown=0.16f;
         attackReady=true;
@@ -133,6 +137,13 @@ public class Player : MonoBehaviour
         if(!stateLock)
             StateMachine();
         RestoreMana();
+
+        foreach(IPlayerStatListener entry in statSubscribers)
+        {
+            entry.UpdatePlayerData(currentHealth,maxHealth,currentMana,maxMana,level,exp);
+        }
+
+
     }
     public SaveData GenerateSave()
     {
