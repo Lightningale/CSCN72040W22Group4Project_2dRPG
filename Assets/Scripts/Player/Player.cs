@@ -300,7 +300,14 @@ public class Player : MonoBehaviour
      public void TakeDamage(int damage,Vector3 source)
     {
         if(currentHealth>0)
-            currentHealth-=damage;
+        {
+             currentHealth-=damage;
+            foreach(IPlayerStatListener entry in statSubscribers)
+            {
+                entry.UpdatePlayerData(currentHealth,maxHealth,currentMana,maxMana,level,exp);
+            }
+        }
+           
         if(currentHealth<=0)
         {
             currentHealth=0;
@@ -314,6 +321,7 @@ public class Player : MonoBehaviour
             SetHorizontalFlip(source.x-transform.position.x);
             StartCoroutine("HitCooldown");
         }
+        
         
     }
     public void ConsumeMana(int amount)
@@ -337,13 +345,6 @@ public class Player : MonoBehaviour
     protected void GetPlayerInput()
     {
         controlInput=InputManager.GetInstance().GetControlInput();
-        
-        /*horizontalInput=Input.GetAxisRaw("Horizontal");//Only -1 or 1
-        verticalInput=Input.GetAxisRaw("Vertical");
-        clickJump=Input.GetButtonDown("Jump");
-        releaseJump=Input.GetButtonUp("Jump");
-        clickPrimary=Input.GetMouseButtonDown(0);*/
-        
     }
     public virtual bool IsGrounded()
     {

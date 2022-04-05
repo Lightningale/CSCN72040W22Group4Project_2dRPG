@@ -20,8 +20,6 @@ public class CharStatsUI : MonoBehaviour,IPlayerStatListener
         player=FindObjectOfType<Player>() as Player;
         
     }
-
-    // Update is called once per frame
     void Update()
     {
   /*
@@ -35,6 +33,12 @@ public class CharStatsUI : MonoBehaviour,IPlayerStatListener
             Healthbar.GetComponent<RectTransform>().anchoredPosition=new Vector3(-528f+1120f*((float)health/maxHealth),42,0);
             Energybar.GetComponent<RectTransform>().anchoredPosition=new Vector3(-882f+882f*((float)mana/(float)maxMana),0,0);*/
     }
+    public void UpdateDisplay()
+    {
+            levelText.text="LV/"+level.ToString();
+            Healthbar.GetComponent<RectTransform>().anchoredPosition=new Vector3(-528f+1120f*((float)health/maxHealth),42,0);
+            Energybar.GetComponent<RectTransform>().anchoredPosition=new Vector3(-882f+882f*((float)mana/(float)maxMana),0,0);
+    }
     public void UpdatePlayerData(int health,int maxHealth,int mana,int maxMana,int level,int exp)
     {
         this.health=health;
@@ -45,10 +49,5 @@ public class CharStatsUI : MonoBehaviour,IPlayerStatListener
         this.exp=exp;
         UpdateDisplay();
     }
-    public void UpdateDisplay()
-    {
-            levelText.text="LV/"+level.ToString();
-            Healthbar.GetComponent<RectTransform>().anchoredPosition=new Vector3(-528f+1120f*((float)health/maxHealth),42,0);
-            Energybar.GetComponent<RectTransform>().anchoredPosition=new Vector3(-882f+882f*((float)mana/(float)maxMana),0,0);
-    }
+   
 }
