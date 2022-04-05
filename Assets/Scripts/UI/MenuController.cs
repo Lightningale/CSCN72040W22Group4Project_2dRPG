@@ -57,7 +57,7 @@ public class MenuController : MonoBehaviour
     public void ResumeGame()
     {
         CloseAllWindows();
-        Time.timeScale=1;
+        Time.timeScale=1f;
     }
 
     public void OpenSaveMenu()

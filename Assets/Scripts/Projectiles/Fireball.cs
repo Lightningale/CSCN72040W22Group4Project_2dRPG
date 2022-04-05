@@ -43,7 +43,7 @@ public class Fireball : MonoBehaviour
         
         //Debug.Log(gameObject.name+" Hit ");
         
-        Enemy hit=other.GetComponentInParent<Enemy>();
+        Enemy hit=other.GetComponent<Enemy>();
         //int atk=GetComponentInParent<Player>().atk;
         if(hit!=null)
         {   
